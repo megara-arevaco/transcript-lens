@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Vídeo de prueba - YouTube</title>
+  </head>
+  <body>
+    <video></video
+    ><ytd-watch-metadata
+      ><h1>Aprender con transcripciones</h1></ytd-watch-metadata
+    >
+    <ytd-video-description-transcript-section-renderer
+      ><button style="display: none">Botón oculto que no debe usarse</button
+      ><button class="open-transcript">
+        Abrir subtítulos (UI de prueba)
+      </button></ytd-video-description-transcript-section-renderer
+    >
+    <div
+      target-id="engagement-panel-searchable-transcript"
+      visibility="ENGAGEMENT_PANEL_VISIBILITY_HIDDEN"
+    ></div>
+    <script>
+      const panel = document.querySelector("[target-id]");
+      document.querySelector(".open-transcript").onclick = () => {
+        panel.setAttribute(
+          "visibility",
+          "ENGAGEMENT_PANEL_VISIBILITY_EXPANDED",
+        );
+        panel.innerHTML =
+          '<div style="height:200px;overflow-y:auto">' +
+          Array.from(
+            { length: 30 },
+            (_, i) =>
+              `<ytd-transcript-segment-renderer style="display:block;height:40px"><span class="segment-timestamp">${Math.floor((i * 10) / 60)}:${String((i * 10) % 60).padStart(2, "0")}</span><span class="segment-text">Concepto número ${i}: aprendizaje y evidencia del vídeo.</span></ytd-transcript-segment-renderer>`,
+          ).join("") +
+          "</div>";
+      };
+    </script>
+  </body>
+</html>

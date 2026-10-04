@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Transcript moderno - YouTube</title>
+  </head>
+  <body>
+    <video></video
+    ><ytd-watch-metadata
+      ><h1>Transcript moderno virtualizado</h1></ytd-watch-metadata
+    >
+    <ytd-video-description-transcript-section-renderer
+      ><button>開く</button></ytd-video-description-transcript-section-renderer
+    >
+    <ytd-engagement-panel-section-list-renderer
+      visibility="ENGAGEMENT_PANEL_VISIBILITY_EXPANDED"
+      style="display: block"
+      ><div
+        id="scroll"
+        style="height: 160px; overflow-y: auto; position: relative"
+      >
+        <div id="space" style="height: 3200px; position: relative"></div></div
+    ></ytd-engagement-panel-section-list-renderer>
+    <script>
+      const scroll = document.querySelector("#scroll");
+      const space = document.querySelector("#space");
+      function render() {
+        const start = Math.floor(scroll.scrollTop / 40);
+        space.innerHTML = Array.from(
+          { length: Math.min(6, 80 - start) },
+          (_, i) => {
+            const n = start + i;
+            return `<transcript-segment-view-model style="display:block;position:absolute;top:${n * 40}px;height:40px"><div class="ytwTranscriptSegmentViewModelTimestamp">${Math.floor((n * 5) / 60)}:${String((n * 5) % 60).padStart(2, "0")}</div><span class="ytAttributedStringHost" role="text">Idea ${n}, evidencia y aprendizaje.</span></transcript-segment-view-model>`;
+          },
+        ).join("");
+      }
+      document.querySelector("button").onclick = render;
+      scroll.addEventListener("scroll", render);
+    </script>
+  </body>
+</html>
