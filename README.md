@@ -1,50 +1,52 @@
 # Transcript Lens
 
-Extensión Chrome Manifest V3 para analizar vídeos de YouTube usando la transcripción que YouTube ya ofrece. El MVP no extrae audio, no usa Whisper y no necesita backend: obtiene segmentos con timestamp desde la página, los manda a OpenRouter desde un contexto de extensión y muestra el resultado en el Side Panel.
+A Chrome Manifest V3 extension for analyzing YouTube videos using the transcripts YouTube already provides. The MVP does not extract audio, use Whisper, or require a backend: it retrieves timestamped segments from the page, sends them to OpenRouter from an extension context, and displays the results in Chrome's Side Panel.
 
-## Qué incluye
+## Features
 
-- Side Panel de Chrome con transcript, presets de análisis, modelo configurable y preguntas sobre el vídeo.
-- Extracción encapsulada en `src/transcript/extract.ts`, basada en componentes de transcript de YouTube y selectores estructurales, no en el texto visible "Show transcript".
-- Segmentos con `text`, `timestamp` y `startSeconds`.
-- Cliente OpenRouter independiente en `src/analysis/openrouter.ts`.
-- Chunking sencillo para transcripts largos y síntesis final de análisis parciales.
-- Búsqueda textual básica para `Ask this video` cuando el transcript no cabe entero.
-- Timestamps clicables en el transcript y en respuestas tipo `[12:43]`, con salto al vídeo mediante messaging.
-- API key, modelo y preferencias guardadas en `chrome.storage.local`.
+- Chrome Side Panel with a transcript, analysis presets, a configurable model, and questions about the video.
+- Transcript extraction encapsulated in `src/transcript/extract.ts`, using YouTube transcript components and structural selectors rather than the visible "Show transcript" label.
+- Segments containing `text`, `timestamp`, and `startSeconds`.
+- An independent OpenRouter client in `src/analysis/openrouter.ts`.
+- Simple chunking for long transcripts and a final synthesis of partial analyses.
+- Basic text search for `Ask this video` when the full transcript does not fit.
+- Clickable timestamps in the transcript and responses such as `[12:43]`, with video seeking through Chrome messaging.
+- API key, model, and preferences saved in `chrome.storage.local`.
 
-## Requisitos
+## Requirements
 
-- Node.js 20 o superior.
-- Chrome 116 o superior.
-- Una API key de OpenRouter.
+- Node.js 20 or later.
+- Chrome 116 or later.
+- An OpenRouter API key.
 
-## Instalación local
+## Local installation
 
 ```bash
 npm install
 npm run build
 ```
 
-El build deja la extensión lista en `dist/`.
+The build produces a ready-to-load extension in `dist/`.
 
-## Cargar la extensión en Chrome
+## Load the extension in Chrome
 
-1. Abre `chrome://extensions`.
-2. Activa `Developer mode`.
-3. Pulsa `Load unpacked`.
-4. Selecciona la carpeta `dist` de este proyecto.
-5. Abre un vídeo de YouTube con subtítulos o transcript disponible.
-6. Pulsa el icono de `Transcript Lens`; se abrirá el Side Panel.
+1. Open `chrome://extensions`.
+2. Enable `Developer mode`.
+3. Click `Load unpacked`.
+4. Select this project's `dist` directory.
+5. Open a YouTube video with available captions or a transcript.
+6. Click the `Transcript Lens` extension icon to open the Side Panel.
 
-Si ya tenías YouTube abierto antes de cargar o actualizar la extensión, recarga la página del vídeo para que Chrome inyecte el content script nuevo.
+If YouTube was already open before you loaded or updated the extension, reload the video page so Chrome can inject the new content script.
 
-## Configurar OpenRouter
+## Configure OpenRouter
 
-1. Crea o copia tu API key en OpenRouter.
-2. En el panel, abre `Configuración`.
-3. Pega la key en `API key`.
-4. Indica un modelo, por ejemplo:
+The extension's interface currently includes Spanish labels. The instructions below retain those labels so you can find the corresponding controls.
+
+1. Create or copy your API key in OpenRouter.
+2. In the panel, open `Configuración` (Settings).
+3. Paste your key into `API key`.
+4. Enter a model ID, for example:
 
 ```text
 openrouter/auto
@@ -53,93 +55,93 @@ anthropic/claude-3.5-sonnet
 google/gemini-flash-1.5
 ```
 
-La extensión no descarga dinámicamente la lista de modelos en esta versión. El endpoint usado es `https://openrouter.ai/api/v1/chat/completions` con `Authorization: Bearer <token>` y `Content-Type: application/json`, según la documentación de OpenRouter.
+This version does not fetch the model list dynamically. It uses the `https://openrouter.ai/api/v1/chat/completions` endpoint with `Authorization: Bearer <token>` and `Content-Type: application/json`, following OpenRouter's documentation.
 
-## Uso
+## Usage
 
-1. Abre un vídeo de YouTube.
-2. Abre el Side Panel desde el icono de la extensión.
-3. Pulsa `Obtener transcripción` si no se detecta automáticamente.
-4. Revisa la pestaña `Transcript`.
-5. Elige una acción:
+1. Open a YouTube video.
+2. Open the Side Panel using the extension icon.
+3. Click `Obtener transcripción` (Get transcript) if it is not detected automatically.
+4. Review the `Transcript` tab.
+5. Choose an action:
    - `Summary`
    - `Deep analysis`
    - `Key ideas`
    - `Learn`
    - `Custom prompt`
-6. Pulsa `Analyze`.
-7. Haz clic en timestamps como `[0:10]` para saltar a ese momento del vídeo.
-8. Tras un análisis inicial, usa `Ask this video` para preguntas independientes.
+6. Click `Analyze`.
+7. Click timestamps such as `[0:10]` to jump to that point in the video.
+8. After an initial analysis, use `Ask this video` for independent questions.
 
-## Arquitectura
+## Architecture
 
-- `public/manifest.json`: Manifest V3, permisos mínimos para Side Panel, storage, YouTube y OpenRouter.
-- `src/background/index.ts`: configura el comportamiento del Side Panel y restringe el acceso a `chrome.storage.local`.
-- `src/content/index.ts`: vive en YouTube, extrae transcript y ejecuta `seekTo(seconds)` sobre el `<video>`.
-- `src/transcript/extract.ts`: estrategia DOM para abrir o reutilizar el transcript nativo, hacer scroll programático, acumular segmentos y deduplicar.
-- `src/sidepanel/*`: React UI, estado de detección, settings, análisis, preguntas y timestamps interactivos.
-- `src/settings/storage.ts`: lectura/escritura de preferencias locales con `setAccessLevel('TRUSTED_CONTEXTS')`.
-- `src/analysis/*`: presets, formateo del transcript, cliente OpenRouter, chunking y selección textual para preguntas.
-- `src/shared/*`: tipos y utilidades compartidas.
+- `public/manifest.json`: Manifest V3 and minimal permissions for the Side Panel, storage, YouTube, and OpenRouter.
+- `src/background/index.ts`: configures Side Panel behavior and restricts access to `chrome.storage.local`.
+- `src/content/index.ts`: runs on YouTube, extracts the transcript, and handles requests to seek the `<video>` to a given time.
+- `src/transcript/extract.ts`: DOM strategy for opening or reusing the native transcript, scrolling programmatically, collecting segments, and deduplicating them.
+- `src/sidepanel/*`: React UI, detection state, settings, analysis, questions, and interactive timestamps.
+- `src/settings/storage.ts`: reads and writes local preferences with storage access restricted to `TRUSTED_CONTEXTS`.
+- `src/analysis/*`: presets, transcript formatting, OpenRouter client, chunking, and text selection for questions.
+- `src/shared/*`: shared types and utilities.
 
-La API key no se inyecta en la página de YouTube. Se guarda en `chrome.storage.local` restringido a contextos confiables y se usa desde el Side Panel, que es una página de la extensión.
+The API key is never injected into the YouTube page. It is stored in `chrome.storage.local`, restricted to trusted extension contexts, and used from the Side Panel, which is an extension page.
 
-## Extracción del transcript
+## Transcript extraction
 
-La estrategia actual intenta:
+The current strategy attempts to:
 
-1. Detectar un panel de transcript ya abierto.
-2. Abrir el bloque de transcript de la descripción del vídeo usando selectores de componentes de YouTube.
-3. Esperar a que aparezcan segmentos.
-4. Buscar filas antiguas y modernas de transcript.
-5. Hacer scroll sobre el contenedor virtualizado si existe.
-6. Deduplicar por `startSeconds + text`.
-7. Restaurar el scroll del panel y de la página.
+1. Detect an already-open transcript panel.
+2. Open the transcript section in the video description using YouTube component selectors.
+3. Wait for segments to appear.
+4. Find legacy and modern transcript rows.
+5. Scroll through the virtualized container, if present.
+6. Deduplicate by `startSeconds + text`.
+7. Restore the panel and page scroll positions.
 
-Tradeoff elegido para el MVP: usar el transcript renderizado por YouTube desde el DOM. Es más simple y evita tocar audio o APIs internas no documentadas, pero depende de la estructura cambiante de YouTube. La lógica está encapsulada para poder reemplazarla por otra estrategia más adelante.
+The MVP uses the transcript rendered by YouTube in the DOM. This keeps the implementation simple and avoids audio processing or undocumented API calls, but depends on YouTube's changing page structure. The extraction logic is encapsulated so it can be replaced with another strategy later.
 
-## Vídeos largos
+## Long videos
 
-`inputTokenBudget` controla el presupuesto aproximado de entrada. Si el transcript completo cabe, se manda entero. Si no cabe:
+`inputTokenBudget` controls the approximate input budget. If the full transcript fits, it is sent in one request. Otherwise:
 
-1. Se divide por segmentos, sin cortar segmentos por la mitad.
-2. Se analiza cada chunk.
-3. Se combinan los análisis parciales en una petición final.
+1. The transcript is split at segment boundaries, without cutting segments in half.
+2. Each chunk is analyzed.
+3. The partial analyses are combined in a final request.
 
-La estimación usa una heurística simple por caracteres, así que puede diferir del tokenizador real del modelo.
+Token estimation uses a simple character-based heuristic and may differ from the model's actual tokenizer.
 
-## Validación
+## Validation
 
 ```bash
 npm run build
 npm run test:e2e
 ```
 
-Los E2E usan Playwright con la extensión cargada en Chromium, fixtures locales de YouTube y OpenRouter mockeado. Cubren el vertical slice, presets, prompt custom, errores de API, transcript virtualizado, vídeos sin transcript, chunking, preguntas y navegación durante un análisis pendiente.
+The E2E tests use Playwright with the extension loaded in Chromium, local YouTube fixtures, and mocked OpenRouter responses. They cover the complete initial flow, presets, custom prompts, API errors, virtualized transcripts, videos without transcripts, chunking, questions, and navigation during a pending analysis.
 
-Si Playwright no tiene navegador instalado:
+If Playwright's browser is not installed:
 
 ```bash
 npx playwright install chromium
 npm run test:e2e
 ```
 
-## Limitaciones conocidas
+## Known limitations
 
-- YouTube puede cambiar sus componentes o clases internas; si ocurre, habrá que actualizar `src/transcript/extract.ts`.
-- Algunos vídeos no ofrecen transcript o lo ocultan por idioma, restricciones o estado de sesión.
-- La extracción DOM puede tardar en transcripts muy largos porque necesita recorrer el panel virtualizado.
-- La selección de fragmentos para preguntas largas usa coincidencia textual básica, sin embeddings.
-- No hay historial remoto ni sincronización entre navegadores.
-- La lista de modelos es manual.
-- No se valida el coste estimado antes de mandar múltiples chunks a OpenRouter.
+- YouTube may change its internal components or classes, requiring updates to `src/transcript/extract.ts`.
+- Some videos do not offer a transcript, or its availability depends on language, restrictions, or session state.
+- DOM extraction may take longer for very long transcripts because it must scroll through the virtualized panel.
+- Context selection for questions about long transcripts uses basic text matching, without embeddings.
+- There is no remote history or synchronization between browsers.
+- Model IDs are configured manually.
+- Estimated costs are not checked before sending multiple chunks to OpenRouter.
 
-## Siguientes mejoras recomendadas
+## Recommended next improvements
 
-- Añadir un selector de idioma cuando YouTube ofrezca varios transcripts.
-- Detectar mejor subtítulos generados automáticamente frente a manuales.
-- Guardar análisis recientes por `videoId` con expiración local.
-- Añadir streaming de respuestas desde OpenRouter.
-- Mejorar la selección de contexto para preguntas con scoring lexical más sólido.
-- Añadir un botón para copiar/exportar transcript y análisis.
-- Investigar una estrategia alternativa basada en datos de captions expuestos por YouTube, manteniendo el fallback DOM.
+- Add a language selector when YouTube offers multiple transcripts.
+- Improve detection of automatically generated versus manual captions.
+- Save recent analyses by `videoId` with local expiration.
+- Add streaming responses from OpenRouter.
+- Improve context selection for questions with stronger lexical scoring.
+- Add a button to copy or export transcripts and analyses.
+- Investigate an alternative strategy based on caption data exposed by YouTube, while keeping the DOM fallback.
