@@ -145,3 +145,63 @@ npm run test:e2e
 - Improve context selection for questions with stronger lexical scoring.
 - Add a button to copy or export transcripts and analyses.
 - Investigate an alternative strategy based on caption data exposed by YouTube, while keeping the DOM fallback.
+
+## Usability and readiness review
+
+**Review date:** October 10, 2026
+
+**Status:** Functional MVP for personal or technical use; further work is needed before it is ready for a general audience.
+
+### Recommended name
+
+**Rewind** (an English adaptation of *Rebobina*) — *Understand the video and jump back to the exact second.* The name connects summaries to timestamps and is more memorable than “Transcript Lens”. Trademark, domain, and store-name availability have not been checked. The code and manifest still use “Transcript Lens”; this proposal has not been adopted.
+
+### Results
+
+The build and all **8 E2E tests** pass. The tests cover transcript extraction with fixtures, analysis, questions, timestamps, long videos, navigation, and API errors. This validates the controlled technical workflow, but does not demonstrate compatibility with every real YouTube page or every OpenRouter model.
+
+The core feature is implemented. To make the product easy and safe to use, the main priorities are guiding initial setup, explaining possible costs, and validating extraction on real videos.
+
+### Usability score
+
+| Heuristic | Score | Observation |
+|---|---:|---|
+| Visibility of system status | 3/4 | Reports detection, analysis, and errors; progress on long analyses could be clearer. |
+| Match with the user's language | 2/4 | Mixes Spanish, English, and technical terms such as “OpenRouter” and “model ID”. |
+| User control and freedom | 3/4 | Users can cancel and switch videos, but results are not retained when navigating. |
+| Consistency | 2/4 | The interface alternates between Spanish and English labels. |
+| Error prevention | 2/4 | Validates some limits, but does not verify the key or model or warn about cost. |
+| Recognition rather than recall | 2/4 | Presets are visible; users must know or look up a model ID. |
+| Flexibility and efficiency | 3/4 | Includes presets, custom prompts, questions, and timestamps; history and export are missing. |
+| Aesthetic and minimalist design | 3/4 | The panel is clear and readable, but still generic. |
+| Help users recover from errors | 3/4 | Many errors offer a way forward; retrying is still manual. |
+| Help and documentation | 2/4 | A README and some inline guidance are available, but contextual onboarding is missing. |
+| **Total** | **25/40** | **Acceptable:** a solid technical foundation, with important improvements needed for non-technical users. |
+
+### Priorities before a wider release
+
+1. **[P1] Guide first-time setup.** Explain how to create and configure an OpenRouter key, suggest a recommended model, and add a connection test before analysis. The model field only suggests `openrouter/auto`; users currently need to understand and configure an ID manually.
+2. **[P1] Explain scope and potential cost.** Long videos may require multiple requests and a synthesis step. Before starting, show the model, approximate transcript size, and number of requests; allow users to limit or confirm long operations. Cost depends on the model, and token counts are approximate.
+3. **[P1] Validate compatibility with real YouTube pages.** Extraction depends on YouTube's internal components, which can change. Test real videos with manual and automatic captions, different languages, and account restrictions. Clearly explain that a transcript must be available and that only the standard `youtube.com/watch` route is supported for now.
+4. **[P2] Keep and export results.** Results disappear when switching videos; there is no history or way to copy or download the transcript and analysis. Local history by `videoId`, with deletion or expiration, plus copy and download options would prevent lost work and repeated requests.
+5. **[P2] Finalize the brand, language, and release readiness.** Adopt or drop “Rewind”, make interface labels consistent, add icons for the extension listing, and prepare a privacy policy explaining local storage and transcript sharing with OpenRouter.
+
+### Strengths
+
+- The main workflow is implemented: transcript retrieval, analysis, questions, and timestamp navigation.
+- Timestamps let users compare answers with the corresponding moment in the original video.
+- The key is stored locally with access restricted to trusted contexts and is never injected into the YouTube page.
+- The automatic interface detector found no issues in `src/sidepanel/App.tsx`. This does not replace accessibility or real-world compatibility testing.
+
+### Cognitive load and accessibility
+
+Cognitive load is **moderate**: users must understand technical terms and configure an external service before they get value. On the positive side, the panel has a clear hierarchy, and the custom prompt appears only when selected.
+
+Fields have labels, focus is visible, and some states are communicated through ARIA. A complete screen-reader and WCAG review is still needed; functional tests are not a substitute.
+
+### Suggested next steps
+
+- Prioritize onboarding and configuration checks.
+- Add cost transparency and limits for long videos.
+- Test extraction against a matrix of real videos and keep the fixtures as regression tests.
+- Then implement local history, export, and the final brand and interface language.
